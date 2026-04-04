@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <script src="script.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        input, select, button { margin: 5px; padding: 8px; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        .delete-btn { background-color: #f44336; }
+        h3 { color: #333; }
+    </style>
+</head>
+<body>
+    <h2>Admin Dashboard</h2>
+    
+    <div class="section">
+        <h3>Add Student</h3>
+        <input type="text" id="student_id" placeholder="Student ID">
+        <input type="text" id="student_name" placeholder="Name">
+        <input type="email" id="student_email" placeholder="Email">
+        <input type="text" id="student_dept" placeholder="Department">
+        <button onclick="addStudent()">Add Student</button>
+    </div>
+    
+    <div class="section">
+        <h3>Add Result</h3>
+        <input type="text" id="result_student_id" placeholder="Student ID">
+        <input type="text" id="result_semester" placeholder="Semester (e.g., Spring 2025)">
+        <input type="text" id="result_subject" placeholder="Subject">
+        <input type="number" id="result_marks" placeholder="Marks">
+        <input type="text" id="result_gpa" placeholder="GPA">
+        <button onclick="addResult()">Add Result</button>
+    </div>
+    
+    <div class="section">
+        <h3>Delete Student</h3>
+        <input type="text" id="delete_student_id" placeholder="Student ID">
+        <button class="delete-btn" onclick="deleteStudent()">Delete Student</button>
+    </div>
+    
+    <div class="section">
+        <h3>View Student Results</h3>
+        <input type="text" id="student_id_view" placeholder="Student ID">
+        <select id="semester_select">
+            <option value="">All Semesters</option>
+            <option value="Spring 2025">Spring 2025</option>
+            <option value="Fall 2025">Fall 2025</option>
+            <option value="Spring 2026">Spring 2026</option>
+        </select>
+        <button onclick="loadData()">Load Results</button>
+        <div id="output"></div>
+    </div>
+    
+    <div class="section">
+        <a href="logout.php">Logout</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Student</title>
+    <script src="script.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        input, button { margin: 10px; padding: 8px; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        .container { max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Add New Student</h2>
+        <input type="text" id="student_id" placeholder="Student ID (e.g., 2024001)">
+        <br>
+        <input type="text" id="student_name" placeholder="Full Name">
+        <br>
+        <input type="email" id="student_email" placeholder="Email Address">
+        <br>
+        <input type="text" id="student_dept" placeholder="Department">
+        <br>
+        <button onclick="addStudent()">Add Student</button>
+        <div id="message" style="margin-top: 10px; color: green;"></div>
+    </div>
+    
+    <script>
+    function addStudent() {
+        let id = document.getElementById("student_id").value;
+        let name = document.getElementById("student_name").value;
+        let email = document.getElementById("student_email").value;
+        let department = document.getElementById("student_dept").value;
+        
+        if (!id || !name || !email) {
+            alert("Please fill all required fields");
+            return;
+        }
+        
+        fetch("add_student.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: "id=" + encodeURIComponent(id) + 
+                  "&name=" + encodeURIComponent(name) + 
+                  "&email=" + encodeURIComponent(email) + 
+                  "&department=" + encodeURIComponent(department)
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("message").innerHTML = data;
+            if (data === "Added") {
+                // Clear form
+                document.getElementById("student_id").value = "";
+                document.getElementById("student_name").value = "";
+                document.getElementById("student_email").value = "";
+                document.getElementById("student_dept").value = "";
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            document.getElementById("message").innerHTML = "Error adding student";
+        });
+    }
+    </script>
+</body>
+</html>
