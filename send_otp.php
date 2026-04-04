@@ -3,22 +3,22 @@ include "db.php";
 
 $email = $_POST['email'];
 
-if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    die("Valid email is required");
+if (empty($email)) {
+    die("Email is required");
 }
 
-// COMMENT OUT বা REMOVE এই চেকটি টেস্টিংয়ের জন্য
-/*
-$check = $conn->prepare("SELECT email FROM students WHERE email=?");
+$check = $conn->prepare("SELECT name FROM students WHERE email=?");
 $check->bind_param("s", $email);
 $check->execute();
 $check->store_result();
 
 if ($check->num_rows == 0) {
-    die("Email not registered");
+    die("Email not registered. Please contact admin.");
 }
+
+$check->bind_result($student_name);
+$check->fetch();
 $check->close();
-*/
 
 $otp = rand(100000, 999999);
 $expiry = date("Y-m-d H:i:s", strtotime("+5 minutes"));
@@ -32,10 +32,10 @@ $stmt->execute();
 $stmt = $conn->prepare("INSERT INTO otp_codes (email, otp, expiry_time) VALUES (?, ?, ?)");
 $stmt->bind_param("sss", $email, $otp, $expiry);
 $stmt->execute();
+$stmt->close();
 
-// For testing - show OTP
+// OTP সরাসরি রিটার্ন করুন (ইমেইল না পাঠিয়ে)
 echo $otp;
 
-$stmt->close();
 $conn->close();
 ?>
