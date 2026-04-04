@@ -4,18 +4,15 @@ include "db.php";
 $email = $_POST['email'];
 $password = $_POST['password'];
 
-// Use prepared statement with password verification
 $stmt = $conn->prepare("SELECT * FROM admin WHERE email=?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
-
 $res = $stmt->get_result();
 
-if ($res->num_rows > 0) {
-    $admin = $res->fetch_assoc();
-    // Verify hashed password (you should store hashed passwords)
-    if (password_verify($password, $admin['password'])) {
+if ($row = $res->fetch_assoc()) {
+    if ($row['password'] === $password) {
         $_SESSION['admin'] = $email;
+        $_SESSION['admin_logged_in'] = true;
         echo "success";
     } else {
         echo "Invalid";
@@ -23,4 +20,7 @@ if ($res->num_rows > 0) {
 } else {
     echo "Invalid";
 }
+
+$stmt->close();
+$conn->close();
 ?>

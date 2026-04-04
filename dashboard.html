@@ -4,7 +4,7 @@
     <title>Student Dashboard</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         input, select, button { margin: 10px 5px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
         button { background-color: #4CAF50; color: white; border: none; cursor: pointer; transition: 0.3s; }
         button:hover { background-color: #45a049; }
@@ -13,41 +13,128 @@
         .add-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 15px 0; border: 1px solid #dee2e6; }
         .add-form input, .add-form select { width: calc(100% - 20px); margin: 8px 0; }
         .result-card { background: white; border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; }
-        .cgpa { background: #d4edda; padding: 10px; border-radius: 5px; font-size: 18px; font-weight: bold; }
+        .semester-card { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin: 15px 0; }
+        .semester-header { background: #007bff; color: white; padding: 10px; margin: -15px -15px 15px -15px; border-radius: 8px 8px 0 0; cursor: pointer; }
+        .subject-item { background: white; padding: 10px; margin: 8px 0; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .cgpa { background: #d4edda; padding: 10px; border-radius: 5px; font-size: 18px; font-weight: bold; margin: 10px 0; }
         .btn-add { background: #007bff; }
         .btn-add:hover { background: #0056b3; }
+        .btn-edit { background: #ffc107; color: #333; }
+        .btn-edit:hover { background: #e0a800; }
+        .btn-delete { background: #dc3545; }
+        .btn-delete:hover { background: #c82333; }
         .btn-save { background: #28a745; }
         .btn-cancel { background: #6c757d; }
-        h2 { color: #333; }
+        .admin-bar { background: #343a40; color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .admin-badge { background: #28a745; padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        .success-message { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin: 10px 0; border: 1px solid #c3e6cb; }
+        h2, h3, h4 { color: #333; }
         hr { margin: 20px 0; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Student Dashboard</h2>
+        <div id="adminBar" class="admin-bar">
+            <span>📚 Student Result Management System</span>
+            <div id="adminStatus">
+                <span id="adminInfo">Checking admin status...</span>
+            </div>
+        </div>
         
         <div>
-            <input type="text" id="student_id" placeholder="Enter Student ID (e.g., 231-115-303)" style="width: 250px;">
-            <select id="semester_select">
-                <option value="">All Semesters</option>
-                <option value="Spring 2025">Spring 2025</option>
-                <option value="Fall 2025">Fall 2025</option>
-                <option value="Spring 2026">Spring 2026</option>
-            </select>
+            <input type="text" id="student_id" placeholder="Enter Student ID" style="width: 250px;">
             <button onclick="loadData()">🔍 Load Results</button>
-            <button onclick="showAddStudentForm()" style="background: #17a2b8;"> Add New Student</button>
         </div>
         
         <div id="output"></div>
     </div>
 
     <script>
+    let currentStudent = null;
+    let isAdmin = false;
+    
+    // Check admin status on page load
+    function checkAdminStatus() {
+        fetch("check_admin.php")
+            .then(res => res.json())
+            .then(data => {
+                if (data.admin) {
+                    isAdmin = true;
+                    document.getElementById("adminInfo").innerHTML = '<span class="admin-badge">👑 Admin: ' + data.email + '</span> <button onclick="adminLogout()" style="background:#dc3545; padding:5px 10px; margin-left:10px;">Logout</button>';
+                } else {
+                    isAdmin = false;
+                    document.getElementById("adminInfo").innerHTML = '<span>👤 Student View</span> <button onclick="showAdminLogin()" style="background:#007bff; padding:5px 10px; margin-left:10px;">Admin Login</button>';
+                }
+            })
+            .catch(error => {
+                console.error("Error checking admin:", error);
+            });
+    }
+    
+    function showAdminLogin() {
+        let html = `
+            <div class="login-prompt" id="adminLoginForm" style="background:#f8d7da; border:1px solid #f5c6cb; padding:15px; border-radius:5px; margin:15px 0;">
+                <h3>Admin Login Required</h3>
+                <p>To add/edit students or results, please login as admin.</p>
+                <input type="email" id="admin_email" placeholder="Admin Email">
+                <input type="password" id="admin_pass" placeholder="Password">
+                <button onclick="adminLogin()" style="background:#28a745;">Login</button>
+                <button onclick="cancelAdminLogin()" style="background:#6c757d;">Cancel</button>
+            </div>
+        `;
+        
+        let outputDiv = document.getElementById("output");
+        removeExistingForms();
+        outputDiv.insertAdjacentHTML('afterbegin', html);
+    }
+    
+    function adminLogin() {
+        let email = document.getElementById("admin_email").value;
+        let password = document.getElementById("admin_pass").value;
+        
+        if (!email || !password) {
+            alert("Please enter both email and password");
+            return;
+        }
+        
+        fetch("admin_login.php", {
+            method: "POST",
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data === "success") {
+                alert("Admin login successful!");
+                cancelAdminLogin();
+                checkAdminStatus();
+                loadData();
+            } else {
+                alert("Invalid admin credentials!");
+            }
+        });
+    }
+    
+    function cancelAdminLogin() {
+        let form = document.getElementById("adminLoginForm");
+        if (form) form.remove();
+    }
+    
+    function adminLogout() {
+        fetch("admin_logout.php")
+            .then(() => {
+                isAdmin = false;
+                checkAdminStatus();
+                loadData();
+                alert("Logged out successfully");
+            });
+    }
+    
     function loadData() {
         let id = document.getElementById("student_id").value;
-        let semester = document.getElementById("semester_select").value;
         
         if (!id) {
-            document.getElementById("output").innerHTML = "<div class='no-result'> Please enter a Student ID</div>";
+            document.getElementById("output").innerHTML = "<div class='no-result'>⚠️ Please enter a Student ID</div>";
             return;
         }
         
@@ -56,24 +143,23 @@
             .then(res => res.json())
             .then(student => {
                 if (student.error || !student.id) {
-                    // Student not found - show add student option
-                    document.getElementById("output").innerHTML = `
+                    let html = `
                         <div class="no-result">
-                            <strong> Student ID: ${id} not found in database!</strong>
-                            <p>Would you like to register this student?</p>
-                            <button onclick="showAddStudentFormWithId('${id}')" class="btn-add">➕ Register Student</button>
-                        </div>
+                            <strong>❌ Student ID: ${id} not found!</strong>
                     `;
+                    if (isAdmin) {
+                        html += `<p>Click below to register this student.</p>
+                                 <button onclick="showAddStudentFormWithId('${id}')" class="btn-add">➕ Register Student</button>`;
+                    } else {
+                        html += `<p>Please contact admin to register.</p>`;
+                    }
+                    html += `</div>`;
+                    document.getElementById("output").innerHTML = html;
                     return;
                 }
                 
-                // Student found - now get results
-                let url = "get_results.php?id=" + encodeURIComponent(id);
-                if (semester && semester !== "") {
-                    url += "&semester=" + encodeURIComponent(semester);
-                }
-                
-                return fetch(url).then(res => res.json()).then(results => ({student, results}));
+                currentStudent = student;
+                return fetch("get_results.php?id=" + encodeURIComponent(id)).then(res => res.json()).then(results => ({student, results}));
             })
             .then(data => {
                 if (!data) return;
@@ -86,70 +172,443 @@
                         <strong>👨‍🎓 Student:</strong> ${student.name} (${student.id})<br>
                         <strong>📧 Email:</strong> ${student.email}<br>
                         <strong>🏫 Department:</strong> ${student.department || 'Not specified'}
-                    </div>
                 `;
                 
-                // Check if results exist
-                if (!results.results || Object.keys(results.results).length === 0) {
-                    // No results - show add result option
-                    html += `
-                        <div class="no-result">
-                            <strong> No results found for ${student.name}!</strong>
-                            <p>Click below to add academic results.</p>
-                            <button onclick="showAddResultForm('${student.id}')" class="btn-add">➕ Add Result</button>
-                        </div>
-                    `;
-                } else {
-                    // Show results
-                    html += `<div class="cgpa">📊 CGPA: ${results.cgpa}</div>`;
-                    
+                if (isAdmin) {
+                    html += `<br><br>
+                             <button onclick="showAddSemesterWithSubjectsForm()" class="btn-add">➕ Add New Semester with Subjects</button>
+                             <button onclick="showEditStudentForm('${student.id}', '${student.name}')" class="btn-edit">✏️ Edit Student</button>
+                             <button onclick="deleteStudent('${student.id}')" class="btn-delete">🗑️ Delete Student</button>`;
+                }
+                
+                html += `</div>`;
+                
+                // Show CGPA
+                if (results.results && Object.keys(results.results).length > 0) {
+                    html += `<div class="cgpa">📊 Overall CGPA: ${results.cgpa}</div>`;
+                }
+                
+                // Show results by semester
+                if (results.results && Object.keys(results.results).length > 0) {
                     for (let sem in results.results) {
-                        html += `<div class="result-card">
-                            <h3>${sem}</h3>
-                            <ul style="margin: 0; padding-left: 20px;">`;
+                        let semesterGPA = calculateSemesterGPA(results.results[sem]);
+                        html += `
+                            <div class="semester-card">
+                                <div class="semester-header" onclick="toggleSemester('sem_${sem.replace(/\s/g, '_')}')">
+                                    <strong>📖 ${sem}</strong> - Semester GPA: ${semesterGPA}
+                                </div>
+                                <div id="sem_${sem.replace(/\s/g, '_')}" class="existing-subjects">
+                        `;
                         
                         results.results[sem].forEach(r => {
-                            html += `<li>${r.subject} : ${r.marks} marks | GPA: ${r.gpa}</li>`;
+                            html += `
+                                <div class="subject-item">
+                                    <span><strong>${r.subject}</strong> : ${r.marks} marks | GPA: ${r.gpa}</span>
+                            `;
+                            if (isAdmin) {
+                                html += `<div>
+                                            <button onclick="editSubject('${student.id}', '${sem}', '${r.subject}', ${r.marks}, ${r.gpa})" class="btn-edit">✏️ Edit</button>
+                                            <button onclick="deleteSubject('${student.id}', '${sem}', '${r.subject}')" class="btn-delete">🗑️ Delete</button>
+                                        </div>`;
+                            }
+                            html += `</div>`;
                         });
                         
-                        html += `</ul></div>`;
+                        html += `</div>`;
+                        
+                        if (isAdmin) {
+                            html += `<button onclick="showAddSubjectForm('${student.id}', '${sem}')" class="btn-add" style="margin-top: 10px;">➕ Add Subject to ${sem}</button>`;
+                        }
+                        
+                        html += `</div>`;
                     }
-                    
-                    // Add more results button
-                    html += `
-                        <hr>
-                        <button onclick="showAddResultForm('${student.id}')" class="btn-add"> Add More Results</button>
-                    `;
+                } else {
+                    html += `<div class="no-result">⚠️ No results found for ${student.name}!`;
+                    if (isAdmin) {
+                        html += ` Click "Add New Semester with Subjects" to add.`;
+                    } else {
+                        html += ` Please contact admin to add results.`;
+                    }
+                    html += `</div>`;
                 }
                 
                 document.getElementById("output").innerHTML = html;
             })
             .catch(error => {
                 console.error("Error:", error);
-                document.getElementById("output").innerHTML = "<div class='no-result'>Error loading data. Please try again.</div>";
+                document.getElementById("output").innerHTML = "<div class='no-result'>❌ Error loading data. Please try again.</div>";
             });
     }
     
-    function showAddStudentForm() {
+    // নতুন ফাংশন: সেমিস্টার এবং সাবজেক্ট একসাথে যোগ করার জন্য
+    function showAddSemesterWithSubjectsForm() {
+        if (!isAdmin) {
+            alert("Admin login required to add results!");
+            showAdminLogin();
+            return;
+        }
+        
         let html = `
-            <div class="add-form" id="addStudentForm">
-                <h3> Register New Student</h3>
-                <input type="text" id="new_student_id" placeholder="Student ID (e.g., 231-115-303)">
-                <input type="text" id="new_student_name" placeholder="Full Name">
-                <input type="email" id="new_student_email" placeholder="Email Address">
-                <input type="text" id="new_student_dept" placeholder="Department">
-                <br>
-                <button onclick="saveNewStudent()" class="btn-save">💾 Save Student</button>
-                <button onclick="cancelForm()" class="btn-cancel"> Cancel</button>
+            <div class="add-form" id="addSemesterSubjectsForm">
+                <h3>➕ Add New Semester with Subjects</h3>
+                <label>Select Semester:</label>
+                <select id="new_semester_select">
+                    <option value="Spring 2025">Spring 2025</option>
+                    <option value="Fall 2025">Fall 2025</option>
+                    <option value="Spring 2026">Spring 2026</option>
+                    <option value="Fall 2026">Fall 2026</option>
+                    <option value="Spring 2027">Spring 2027</option>
+                </select>
+                
+                <hr>
+                <h4>Subjects for this semester:</h4>
+                <div id="subjects_list">
+                    <div class="subject-input-group" style="margin-bottom: 10px; padding: 10px; background: #e9ecef; border-radius: 5px;">
+                        <input type="text" placeholder="Subject Name" class="subject_name" style="width: 40%;">
+                        <input type="number" placeholder="Marks" class="subject_marks" style="width: 20%;" min="0" max="100">
+                        <input type="text" placeholder="GPA (auto)" class="subject_gpa" style="width: 20%;" readonly>
+                    </div>
+                </div>
+                
+                <button onclick="addMoreSubjects()" style="background: #6c757d;">➕ Add Another Subject</button>
+                <br><br>
+                <button onclick="saveAllSubjects()" class="btn-save">💾 Save All Subjects</button>
+                <button onclick="cancelForm()" class="btn-cancel">❌ Cancel</button>
             </div>
         `;
         
         let outputDiv = document.getElementById("output");
         removeExistingForms();
-        outputDiv.insertAdjacentHTML('afterbegin', html);
+        outputDiv.insertAdjacentHTML('beforeend', html);
+        
+        // Add auto GPA calculation for the first subject
+        attachGPAEvents();
+    }
+    
+    function addMoreSubjects() {
+        let subjectsDiv = document.getElementById("subjects_list");
+        let newSubject = document.createElement("div");
+        newSubject.className = "subject-input-group";
+        newSubject.style.marginBottom = "10px";
+        newSubject.style.padding = "10px";
+        newSubject.style.background = "#e9ecef";
+        newSubject.style.borderRadius = "5px";
+        newSubject.innerHTML = `
+            <input type="text" placeholder="Subject Name" class="subject_name" style="width: 40%;">
+            <input type="number" placeholder="Marks" class="subject_marks" style="width: 20%;" min="0" max="100">
+            <input type="text" placeholder="GPA (auto)" class="subject_gpa" style="width: 20%;" readonly>
+            <button onclick="this.parentElement.remove()" style="background:#dc3545; padding:5px 10px; margin-left:5px;">🗑️ Remove</button>
+        `;
+        subjectsDiv.appendChild(newSubject);
+        attachGPAEvents();
+    }
+    
+    function attachGPAEvents() {
+        setTimeout(function() {
+            let marksInputs = document.querySelectorAll(".subject_marks");
+            marksInputs.forEach(input => {
+                input.removeEventListener('input', calculateGPAForField);
+                input.addEventListener('input', calculateGPAForField);
+            });
+        }, 100);
+    }
+    
+    function calculateGPAForField(e) {
+        let marks = parseFloat(e.target.value);
+        let gpa = calculateGPA(marks);
+        let parentDiv = e.target.parentElement;
+        let gpaInput = parentDiv.querySelector(".subject_gpa");
+        if (gpaInput && !isNaN(gpa)) {
+            gpaInput.value = gpa.toFixed(2);
+        }
+    }
+    
+    function saveAllSubjects() {
+        let semester = document.getElementById("new_semester_select").value;
+        let subjectGroups = document.querySelectorAll(".subject-input-group");
+        let subjects = [];
+        
+        subjectGroups.forEach(group => {
+            let name = group.querySelector(".subject_name").value;
+            let marks = group.querySelector(".subject_marks").value;
+            let gpa = group.querySelector(".subject_gpa").value;
+            
+            if (name && marks) {
+                subjects.push({name, marks, gpa});
+            }
+        });
+        
+        if (subjects.length === 0) {
+            alert("⚠️ Please add at least one subject!");
+            return;
+        }
+        
+        let promises = [];
+        subjects.forEach(subject => {
+            let promise = fetch("add_result.php", {
+                method: "POST",
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `student_id=${encodeURIComponent(currentStudent.id)}&semester=${encodeURIComponent(semester)}&subject=${encodeURIComponent(subject.name)}&marks=${encodeURIComponent(subject.marks)}&gpa=${encodeURIComponent(subject.gpa || calculateGPA(subject.marks))}`
+            });
+            promises.push(promise);
+        });
+        
+        Promise.all(promises)
+            .then(responses => Promise.all(responses.map(r => r.text())))
+            .then(results => {
+                alert(`${subjects.length} subjects added successfully!`);
+                cancelForm();
+                loadData();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error adding subjects");
+            });
+    }
+    
+    function calculateSemesterGPA(subjects) {
+        let totalGPA = 0;
+        let count = 0;
+        subjects.forEach(s => {
+            if (s.gpa) {
+                totalGPA += parseFloat(s.gpa);
+                count++;
+            }
+        });
+        return count > 0 ? (totalGPA / count).toFixed(2) : 0;
+    }
+    
+    function showAddSubjectForm(studentId, semester) {
+        if (!isAdmin) {
+            alert("Admin login required to add subjects!");
+            showAdminLogin();
+            return;
+        }
+        
+        let html = `
+            <div class="add-form" id="addSubjectForm">
+                <h3>➕ Add Subject for ${semester}</h3>
+                <input type="hidden" id="subject_student_id" value="${studentId}">
+                <input type="hidden" id="subject_semester" value="${semester}">
+                
+                <label>Subject Name:</label>
+                <input type="text" id="subject_name" placeholder="e.g., Mathematics, Physics, English">
+                
+                <label>Marks (0-100):</label>
+                <input type="number" id="subject_marks" placeholder="Marks" min="0" max="100">
+                
+                <label>GPA (0.00 - 4.00):</label>
+                <input type="text" id="subject_gpa" placeholder="e.g., 3.50">
+                
+                <br>
+                <button onclick="saveSubject()" class="btn-save">💾 Save Subject</button>
+                <button onclick="cancelForm()" class="btn-cancel">❌ Cancel</button>
+            </div>
+        `;
+        
+        let outputDiv = document.getElementById("output");
+        removeExistingForms();
+        outputDiv.insertAdjacentHTML('beforeend', html);
+        
+        let marksInput = document.getElementById("subject_marks");
+        if (marksInput) {
+            marksInput.addEventListener('input', function() {
+                let marks = parseFloat(this.value);
+                let gpa = calculateGPA(marks);
+                if (!isNaN(gpa)) {
+                    document.getElementById("subject_gpa").value = gpa.toFixed(2);
+                }
+            });
+        }
+    }
+    
+    function editSubject(studentId, semester, subject, marks, gpa) {
+        if (!isAdmin) {
+            alert("Admin login required to edit subjects!");
+            showAdminLogin();
+            return;
+        }
+        
+        let html = `
+            <div class="add-form" id="editSubjectForm">
+                <h3>✏️ Edit Subject: ${subject}</h3>
+                <input type="hidden" id="edit_student_id" value="${studentId}">
+                <input type="hidden" id="edit_semester" value="${semester}">
+                <input type="hidden" id="edit_subject" value="${subject}">
+                
+                <label>Marks (0-100):</label>
+                <input type="number" id="edit_marks" value="${marks}" placeholder="Marks" min="0" max="100">
+                
+                <label>GPA (0.00 - 4.00):</label>
+                <input type="text" id="edit_gpa" value="${gpa}" placeholder="e.g., 3.50">
+                
+                <br>
+                <button onclick="updateSubject()" class="btn-save">💾 Update Subject</button>
+                <button onclick="cancelForm()" class="btn-cancel">❌ Cancel</button>
+            </div>
+        `;
+        
+        let outputDiv = document.getElementById("output");
+        removeExistingForms();
+        outputDiv.insertAdjacentHTML('beforeend', html);
+    }
+    
+    function updateSubject() {
+        let student_id = document.getElementById("edit_student_id").value;
+        let semester = document.getElementById("edit_semester").value;
+        let subject = document.getElementById("edit_subject").value;
+        let marks = document.getElementById("edit_marks").value;
+        let gpa = document.getElementById("edit_gpa").value;
+        
+        fetch("add_result.php", {
+            method: "POST",
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `student_id=${encodeURIComponent(student_id)}&semester=${encodeURIComponent(semester)}&subject=${encodeURIComponent(subject)}&marks=${encodeURIComponent(marks)}&gpa=${encodeURIComponent(gpa)}`
+        })
+        .then(res => res.text())
+        .then(data => {
+            alert(data);
+            cancelForm();
+            loadData();
+        });
+    }
+    
+    function deleteSubject(studentId, semester, subject) {
+        if (!isAdmin) {
+            alert("Admin login required to delete subjects!");
+            showAdminLogin();
+            return;
+        }
+        
+        if (confirm(`Are you sure you want to delete ${subject} from ${semester}?`)) {
+            fetch("delete_result.php", {
+                method: "POST",
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `student_id=${encodeURIComponent(studentId)}&semester=${encodeURIComponent(semester)}&subject=${encodeURIComponent(subject)}`
+            })
+            .then(res => res.text())
+            .then(data => {
+                alert(data);
+                loadData();
+            });
+        }
+    }
+    
+    function deleteStudent(studentId) {
+        if (!isAdmin) {
+            alert("Admin login required to delete students!");
+            showAdminLogin();
+            return;
+        }
+        
+        if (confirm(`Are you sure you want to delete student ${studentId}? This will also delete all results.`)) {
+            fetch("delete_student.php", {
+                method: "POST",
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `id=${encodeURIComponent(studentId)}`
+            })
+            .then(res => res.text())
+            .then(data => {
+                alert(data);
+                document.getElementById("student_id").value = "";
+                loadData();
+            });
+        }
+    }
+    
+    function showEditStudentForm(studentId, studentName) {
+        if (!isAdmin) {
+            alert("Admin login required to edit students!");
+            showAdminLogin();
+            return;
+        }
+        
+        let html = `
+            <div class="add-form" id="editStudentForm">
+                <h3>✏️ Edit Student: ${studentId}</h3>
+                <label>New Name:</label>
+                <input type="text" id="edit_student_name" value="${studentName}">
+                <br>
+                <button onclick="updateStudent('${studentId}')" class="btn-save">💾 Update</button>
+                <button onclick="cancelForm()" class="btn-cancel">Cancel</button>
+            </div>
+        `;
+        
+        let outputDiv = document.getElementById("output");
+        removeExistingForms();
+        outputDiv.insertAdjacentHTML('beforeend', html);
+    }
+    
+    function updateStudent(studentId) {
+        let name = document.getElementById("edit_student_name").value;
+        
+        fetch("update_student.php", {
+            method: "POST",
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `id=${encodeURIComponent(studentId)}&name=${encodeURIComponent(name)}`
+        })
+        .then(res => res.text())
+        .then(data => {
+            alert(data);
+            cancelForm();
+            loadData();
+        });
+    }
+    
+    function saveSubject() {
+        let student_id = document.getElementById("subject_student_id").value;
+        let semester = document.getElementById("subject_semester").value;
+        let subject = document.getElementById("subject_name").value;
+        let marks = document.getElementById("subject_marks").value;
+        let gpa = document.getElementById("subject_gpa").value;
+        
+        if (!student_id || !semester || !subject || !marks) {
+            alert("⚠️ Please fill all fields!");
+            return;
+        }
+        
+        fetch("add_result.php", {
+            method: "POST",
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `student_id=${encodeURIComponent(student_id)}&semester=${encodeURIComponent(semester)}&subject=${encodeURIComponent(subject)}&marks=${encodeURIComponent(marks)}&gpa=${encodeURIComponent(gpa)}`
+        })
+        .then(res => res.text())
+        .then(data => {
+            alert(data);
+            cancelForm();
+            loadData();
+        });
+    }
+    
+    function calculateGPA(marks) {
+        if (marks >= 80) return 4.00;
+        if (marks >= 75) return 3.75;
+        if (marks >= 70) return 3.50;
+        if (marks >= 65) return 3.25;
+        if (marks >= 60) return 3.00;
+        if (marks >= 55) return 2.75;
+        if (marks >= 50) return 2.50;
+        if (marks >= 45) return 2.25;
+        if (marks >= 40) return 2.00;
+        return 0.00;
+    }
+    
+    function toggleSemester(id) {
+        let element = document.getElementById(id);
+        if (element.style.display === "none") {
+            element.style.display = "block";
+        } else {
+            element.style.display = "none";
+        }
     }
     
     function showAddStudentFormWithId(id) {
+        if (!isAdmin) {
+            alert("Admin login required to add students!");
+            showAdminLogin();
+            return;
+        }
+        
         let html = `
             <div class="add-form" id="addStudentForm">
                 <h3>➕ Register New Student</h3>
@@ -159,7 +618,7 @@
                 <input type="text" id="new_student_dept" placeholder="Department">
                 <br>
                 <button onclick="saveNewStudent()" class="btn-save">💾 Save Student</button>
-                <button onclick="cancelForm()" class="btn-cancel"> Cancel</button>
+                <button onclick="cancelForm()" class="btn-cancel">❌ Cancel</button>
             </div>
         `;
         
@@ -190,94 +649,7 @@
                 alert("✓ Student registered successfully!");
                 document.getElementById("student_id").value = id;
                 cancelForm();
-                loadData(); // Reload to show the student
-            } else {
-                alert("✗ Error: " + data);
-            }
-        });
-    }
-    
-    function showAddResultForm(studentId) {
-        let html = `
-            <div class="add-form" id="addResultForm">
-                <h3>➕ Add Result for Student: ${studentId}</h3>
-                <input type="hidden" id="result_student_id" value="${studentId}">
-                
-                <label>Semester:</label>
-                <select id="result_semester">
-                    <option value="Spring 2025">Spring 2025</option>
-                    <option value="Fall 2025">Fall 2025</option>
-                    <option value="Spring 2026">Spring 2026</option>
-                </select>
-                
-                <label>Subject:</label>
-                <input type="text" id="result_subject" placeholder="e.g., Mathematics, Physics, English">
-                
-                <label>Marks (0-100):</label>
-                <input type="number" id="result_marks" placeholder="Marks" min="0" max="100">
-                
-                <label>GPA (0.00 - 4.00):</label>
-                <input type="text" id="result_gpa" placeholder="e.g., 3.50">
-                
-                <br>
-                <button onclick="saveResult()" class="btn-save">💾 Save Result</button>
-                <button onclick="cancelForm()" class="btn-cancel">❌ Cancel</button>
-            </div>
-        `;
-        
-        let outputDiv = document.getElementById("output");
-        removeExistingForms();
-        outputDiv.insertAdjacentHTML('beforeend', html);
-        
-        // Auto-calculate GPA from marks
-        let marksInput = document.getElementById("result_marks");
-        if (marksInput) {
-            marksInput.addEventListener('input', function() {
-                let marks = parseFloat(this.value);
-                let gpa = calculateGPA(marks);
-                if (!isNaN(gpa)) {
-                    document.getElementById("result_gpa").value = gpa.toFixed(2);
-                }
-            });
-        }
-    }
-    
-    function calculateGPA(marks) {
-        if (marks >= 80) return 4.00;
-        if (marks >= 75) return 3.75;
-        if (marks >= 70) return 3.50;
-        if (marks >= 65) return 3.25;
-        if (marks >= 60) return 3.00;
-        if (marks >= 55) return 2.75;
-        if (marks >= 50) return 2.50;
-        if (marks >= 45) return 2.25;
-        if (marks >= 40) return 2.00;
-        return 0.00;
-    }
-    
-    function saveResult() {
-        let student_id = document.getElementById("result_student_id").value;
-        let semester = document.getElementById("result_semester").value;
-        let subject = document.getElementById("result_subject").value;
-        let marks = document.getElementById("result_marks").value;
-        let gpa = document.getElementById("result_gpa").value;
-        
-        if (!student_id || !semester || !subject || !marks) {
-            alert("⚠️ Please fill all fields!");
-            return;
-        }
-        
-        fetch("add_result.php", {
-            method: "POST",
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: `student_id=${encodeURIComponent(student_id)}&semester=${encodeURIComponent(semester)}&subject=${encodeURIComponent(subject)}&marks=${encodeURIComponent(marks)}&gpa=${encodeURIComponent(gpa)}`
-        })
-        .then(res => res.text())
-        .then(data => {
-            if (data.includes("Successfully")) {
-                alert("✓ Result added successfully!");
-                cancelForm();
-                loadData(); // Reload to show new result
+                loadData();
             } else {
                 alert("✗ Error: " + data);
             }
@@ -289,20 +661,15 @@
     }
     
     function removeExistingForms() {
-        let existingForm = document.getElementById("addStudentForm");
-        if (existingForm) existingForm.remove();
-        
-        existingForm = document.getElementById("addResultForm");
-        if (existingForm) existingForm.remove();
+        let forms = ["addStudentForm", "addSemesterSubjectsForm", "addSubjectForm", "editSubjectForm", "editStudentForm", "adminLoginForm", "quickAddForm"];
+        forms.forEach(formId => {
+            let form = document.getElementById(formId);
+            if (form) form.remove();
+        });
     }
     
-    // Load data on page load if ID exists
-    window.onload = function() {
-        let id = document.getElementById("student_id").value;
-        if (id) {
-            loadData();
-        }
-    }
+    // Initialize
+    checkAdminStatus();
     </script>
 </body>
 </html>

@@ -1,4 +1,11 @@
 <?php
+session_start();
+
+// Check if admin is logged in
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    die("Unauthorized: Admin login required");
+}
+
 include "db.php";
 
 $student_id = $_POST['student_id'];
