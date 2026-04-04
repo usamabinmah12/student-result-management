@@ -1,7 +1,7 @@
 <?php
 include "db.php";
 
-// টেস্ট স্টুডেন্ট ডাটা
+
 $students = [
     ['2024001', 'John Doe', 'student@example.com', 'Computer Science'],
     ['2024002', 'Jane Smith', 'jane@example.com', 'Electrical Engineering'],
@@ -16,7 +16,7 @@ foreach ($students as $student) {
     $email = $student[2];
     $dept = $student[3];
     
-    // Check if student already exists
+    
     $check = $conn->prepare("SELECT id FROM students WHERE id=?");
     $check->bind_param("s", $id);
     $check->execute();

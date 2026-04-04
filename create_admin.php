@@ -20,11 +20,11 @@ if ($check->num_rows > 0) {
     $stmt->bind_param("ss", $hashed_password, $email);
     
     if ($stmt->execute()) {
-        echo "✅ Admin password updated successfully!<br>";
+        echo " Admin password updated successfully!<br>";
         echo "Email: admin@example.com<br>";
         echo "Password: admin123<br>";
     } else {
-        echo "❌ Error updating admin: " . $stmt->error;
+        echo " Error updating admin: " . $stmt->error;
     }
     $stmt->close();
 } else {
@@ -33,11 +33,11 @@ if ($check->num_rows > 0) {
     $stmt->bind_param("ss", $email, $hashed_password);
     
     if ($stmt->execute()) {
-        echo "✅ Admin created successfully!<br>";
+        echo " Admin created successfully!<br>";
         echo "Email: admin@example.com<br>";
         echo "Password: admin123<br>";
     } else {
-        echo "❌ Error creating admin: " . $stmt->error;
+        echo " Error creating admin: " . $stmt->error;
     }
     $stmt->close();
 }

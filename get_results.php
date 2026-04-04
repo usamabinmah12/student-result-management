@@ -9,7 +9,6 @@ if (empty($id)) {
     exit();
 }
 
-// Check if student exists
 $checkStudent = $conn->prepare("SELECT * FROM students WHERE id=?");
 $checkStudent->bind_param("s", $id);
 $checkStudent->execute();
@@ -20,7 +19,6 @@ if ($studentResult->num_rows == 0) {
     exit();
 }
 
-// Query results
 if ($semester) {
     $stmt = $conn->prepare("SELECT * FROM results WHERE student_id=? AND semester=? ORDER BY subject ASC");
     $stmt->bind_param("ss", $id, $semester);

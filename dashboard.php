@@ -37,7 +37,7 @@
         
         <div>
             <input type="text" id="student_id" placeholder="Enter Student ID" style="width: 250px;">
-            <button onclick="loadData()">🔍 Load Results</button>
+            <button onclick="loadData()"> Load Results</button>
             <button onclick="showAddStudentForm()" style="background: #17a2b8;">Add New Student</button>
         </div>
         
@@ -64,7 +64,7 @@
                         <div class="no-result">
                             <strong>Student ID: ${id} not found!</strong>
                             <p>Would you like to register this student?</p>
-                            <button onclick="showAddStudentFormWithId('${id}')" class="btn-add">➕ Register Student</button>
+                            <button onclick="showAddStudentFormWithId('${id}')" class="btn-add"> Register Student</button>
                         </div>
                     `;
                     return;
@@ -109,15 +109,15 @@
                                 <div class="subject-item">
                                     <span><strong>${r.subject}</strong> : ${r.marks} marks | GPA: ${r.gpa}</span>
                                     <div>
-                                        <button onclick="editSubject('${student.id}', '${sem}', '${r.subject}', ${r.marks}, ${r.gpa})" class="btn-edit">✏️ Edit</button>
-                                        <button onclick="deleteSubject('${student.id}', '${sem}', '${r.subject}')" class="btn-delete">🗑️ Delete</button>
+                                        <button onclick="editSubject('${student.id}', '${sem}', '${r.subject}', ${r.marks}, ${r.gpa})" class="btn-edit"> Edit</button>
+                                        <button onclick="deleteSubject('${student.id}', '${sem}', '${r.subject}')" class="btn-delete"> Delete</button>
                                     </div>
                                 </div>
                             `;
                         });
                         
                         html += `
-                                    <button onclick="showAddSubjectForm('${student.id}', '${sem}')" class="btn-add" style="margin-top: 10px;">➕ Add Subject to ${sem}</button>
+                                    <button onclick="showAddSubjectForm('${student.id}', '${sem}')" class="btn-add" style="margin-top: 10px;"> Add Subject to ${sem}</button>
                                 </div>
                             </div>
                         `;
@@ -130,7 +130,7 @@
             })
             .catch(error => {
                 console.error("Error:", error);
-                document.getElementById("output").innerHTML = "<div class='no-result'>❌ Error loading data. Please try again.</div>";
+                document.getElementById("output").innerHTML = "<div class='no-result'> Error loading data. Please try again.</div>";
             });
     }
     
@@ -216,7 +216,7 @@
     function editSubject(studentId, semester, subject, marks, gpa) {
         let html = `
             <div class="add-form" id="editSubjectForm">
-                <h3>✏️ Edit Subject: ${subject}</h3>
+                <h3> Edit Subject: ${subject}</h3>
                 <input type="hidden" id="edit_student_id" value="${studentId}">
                 <input type="hidden" id="edit_semester" value="${semester}">
                 <input type="hidden" id="edit_subject" value="${subject}">
@@ -228,8 +228,8 @@
                 <input type="text" id="edit_gpa" value="${gpa}" placeholder="e.g., 3.50">
                 
                 <br>
-                <button onclick="updateSubject()" class="btn-save">💾 Update Subject</button>
-                <button onclick="cancelForm()" class="btn-cancel">❌ Cancel</button>
+                <button onclick="updateSubject()" class="btn-save"> Update Subject</button>
+                <button onclick="cancelForm()" class="btn-cancel"> Cancel</button>
             </div>
         `;
         
@@ -323,13 +323,13 @@
     function showAddStudentForm() {
         let html = `
             <div class="add-form" id="addStudentForm">
-                <h3>➕ Register New Student</h3>
+                <h3> Register New Student</h3>
                 <input type="text" id="new_student_id" placeholder="Student ID">
                 <input type="text" id="new_student_name" placeholder="Full Name">
                 <input type="email" id="new_student_email" placeholder="Email Address">
                 <input type="text" id="new_student_dept" placeholder="Department">
                 <br>
-                <button onclick="saveNewStudent()" class="btn-save">💾 Save Student</button>
+                <button onclick="saveNewStudent()" class="btn-save"> Save Student</button>
                 <button onclick="cancelForm()" class="btn-cancel"> Cancel</button>
             </div>
         `;
@@ -342,13 +342,13 @@
     function showAddStudentFormWithId(id) {
         let html = `
             <div class="add-form" id="addStudentForm">
-                <h3>➕ Register New Student</h3>
+                <h3> Register New Student</h3>
                 <input type="text" id="new_student_id" value="${id}" placeholder="Student ID" readonly style="background:#e9ecef;">
                 <input type="text" id="new_student_name" placeholder="Full Name">
                 <input type="email" id="new_student_email" placeholder="Email Address">
                 <input type="text" id="new_student_dept" placeholder="Department">
                 <br>
-                <button onclick="saveNewStudent()" class="btn-save">💾 Save Student</button>
+                <button onclick="saveNewStudent()" class="btn-save"> Save Student</button>
                 <button onclick="cancelForm()" class="btn-cancel"> Cancel</button>
             </div>
         `;
@@ -377,12 +377,12 @@
         .then(res => res.text())
         .then(data => {
             if (data === "Added") {
-                alert("✓ Student registered successfully!");
+                alert(" Student registered successfully!");
                 document.getElementById("student_id").value = id;
                 cancelForm();
                 loadData();
             } else {
-                alert("✗ Error: " + data);
+                alert(" Error: " + data);
             }
         });
     }
