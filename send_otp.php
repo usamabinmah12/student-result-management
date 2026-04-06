@@ -13,8 +13,6 @@ $email = $_POST['email'];
 if (empty($email)) {
     die("Email is required");
 }
-
-
 $check = $conn->prepare("SELECT name FROM students WHERE email=?");
 $check->bind_param("s", $email);
 $check->execute();
@@ -48,16 +46,12 @@ try {
     $mail->isSMTP();
     $mail->Host       = 'smtp.gmail.com';
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'usamabinmahbub12@gmail.com';  // আপনার Gmail ইমেইল দিন
-    $mail->Password   = 'xuzu mody fzgo ubxs';   // আপনার App Password দিন (স্পেস সহ)
+    $mail->Username   = 'usamabinmahbub12@gmail.com'; 
+    $mail->Password   = 'xuzu mody fzgo ubxs';   
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
-    
-    
     $mail->setFrom('your_email@gmail.com', 'Metropolitan University');
     $mail->addAddress($email, $student_name);
-    
-    
     $mail->isHTML(true);
     $mail->Subject = 'Your OTP for Student Login - Metropolitan University';
     $mail->Body = "

@@ -39,7 +39,6 @@ function loadData() {
         });
 }
 
-// Student Login - Send OTP
 function sendOTP() {
     let email = document.getElementById("email").value;
     
@@ -47,8 +46,6 @@ function sendOTP() {
         alert("Please enter your email address");
         return;
     }
-    
-    // Email format validation
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
         alert("Please enter a valid email address");
@@ -110,7 +107,6 @@ function verifyOTP() {
     });
 }
 
-// Admin Login
 function adminLogin() {
     let email = document.getElementById("admin_email").value;
     let password = document.getElementById("admin_pass").value;
@@ -142,7 +138,6 @@ function adminLogin() {
     });
 }
 
-// Dashboard - Load Results
 function loadData() {
     let id = document.getElementById("student_id").value;
     let semester = document.getElementById("semester_select") ? document.getElementById("semester_select").value : "";
@@ -186,7 +181,7 @@ function loadData() {
         });
 }
 
-// Load Student Info (for admin panel)
+
 function loadStudentInfo() {
     let id = document.getElementById("student_id").value;
     
@@ -212,7 +207,6 @@ function loadStudentInfo() {
         });
 }
 
-// Add Student
 function addStudent() {
     let id = document.getElementById("student_id").value;
     let name = document.getElementById("student_name").value;
@@ -238,7 +232,7 @@ function addStudent() {
     .then(data => {
         alert(data);
         if (data === "Added") {
-            // Clear form
+           
             document.getElementById("student_id").value = "";
             document.getElementById("student_name").value = "";
             document.getElementById("student_email").value = "";
@@ -251,7 +245,7 @@ function addStudent() {
     });
 }
 
-// Add Result
+
 function addResult() {
     let student_id = document.getElementById("result_student_id").value;
     let semester = document.getElementById("result_semester").value;
@@ -292,7 +286,6 @@ function addResult() {
     });
 }
 
-// Delete Student
 function deleteStudent() {
     let id = document.getElementById("delete_student_id").value;
     

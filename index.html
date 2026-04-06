@@ -299,8 +299,6 @@
 </head>
 
 <body>
-
-    <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="logo">
             <div class="logo-icon">MU</div>
@@ -310,7 +308,7 @@
             </div>
         </div>
         <div class="nav-links">
-            <a href="#">Home</a>
+            <a href="./index.html">Home</a>
             <a href="#">About</a>
             <a href="#">Academics</a>
             <a href="#">Admission</a>
@@ -318,7 +316,6 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <div class="main-container">
         <div class="container">
             <div class="uni-badge">
@@ -386,13 +383,13 @@
 
                 if (data.length === 6 && !isNaN(data)) {
                     alert("🎓 Your OTP is: " + data + "\n\nPlease use this OTP to login.");
-                    msgDiv.innerHTML = "<div class='success'>✓ OTP generated successfully! Check the alert box.</div>";
+                    msgDiv.innerHTML = "<div class='success'>OTP generated successfully! Check the alert box.</div>";
                     document.getElementById("otp_section").style.display = "block";
                 } else if (data === "success") {
-                    msgDiv.innerHTML = "<div class='success'>✓ OTP sent to your email! Please check your inbox.</div>";
+                    msgDiv.innerHTML = "<div class='success'>OTP sent to your email! Please check your inbox.</div>";
                     document.getElementById("otp_section").style.display = "block";
                 } else {
-                    msgDiv.innerHTML = "<div class='error'>✗ " + data + "</div>";
+                    msgDiv.innerHTML = "<div class='error'>" + data + "</div>";
                 }
             })
             .catch(error => {
@@ -430,16 +427,16 @@
             .then(response => response.text())
             .then(data => {
                 if (data === "success") {
-                    msgDiv.innerHTML = "<div class='success'>✓ Login successful! Redirecting to dashboard...</div>";
+                    msgDiv.innerHTML = "<div class='success'>Login successful! Redirecting to dashboard...</div>";
                     setTimeout(() => {
                         window.location.href = "dashboard.html";
                     }, 1000);
                 } else {
-                    msgDiv.innerHTML = "<div class='error'>✗ " + data + "</div>";
+                    msgDiv.innerHTML = "<div class='error'>" + data + "</div>";
                 }
             })
             .catch(error => {
-                msgDiv.innerHTML = "<div class='error'>⚠️ Verification failed. Please try again.</div>";
+                msgDiv.innerHTML = "<div class='error'>Verification failed. Please try again.</div>";
                 console.error("Error:", error);
             });
         }
