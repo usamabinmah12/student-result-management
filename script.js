@@ -107,36 +107,36 @@ function verifyOTP() {
     });
 }
 
-function adminLogin() {
-    let email = document.getElementById("admin_email").value;
-    let password = document.getElementById("admin_pass").value;
+// function adminLogin() {
+//     let email = document.getElementById("admin_email").value;
+//     let password = document.getElementById("admin_pass").value;
     
-    if (!email || !password) {
-        alert("Please enter both email and password");
-        return;
-    }
+//     if (!email || !password) {
+//         alert("Please enter both email and password");
+//         return;
+//     }
     
-    fetch("admin_login.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: "email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password)
-    })
-    .then(response => response.text())
-    .then(data => {
-        if (data === "success") {
-            alert("Admin login successful!");
-            window.location.href = "admin_dashboard.html";
-        } else {
-            alert("Invalid credentials: " + data);
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("Login failed. Please try again.");
-    });
-}
+//     fetch("admin_login.php", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/x-www-form-urlencoded",
+//         },
+//         body: "email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password)
+//     })
+//     .then(response => response.text())
+//     .then(data => {
+//         if (data === "success") {
+//             alert("Admin login successful!");
+//             window.location.href = "admin_dashboard.html";
+//         } else {
+//             alert("Invalid credentials: " + data);
+//         }
+//     })
+//     .catch(error => {
+//         console.error("Error:", error);
+//         alert("Login failed. Please try again.");
+//     });
+// }
 
 function loadData() {
     let id = document.getElementById("student_id").value;
