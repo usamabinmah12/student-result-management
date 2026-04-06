@@ -19,7 +19,6 @@
             position: relative;
         }
 
-        
         body::before {
             content: '';
             position: fixed;
@@ -32,7 +31,6 @@
             z-index: -1;
         }
 
-        
         .navbar {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -135,7 +133,6 @@
             padding: 40px 20px;
         }
 
-        
         .container {
             max-width: 450px;
             width: 100%;
@@ -176,7 +173,6 @@
             font-size: 14px;
         }
 
-        
         .input-group {
             margin-bottom: 20px;
         }
@@ -274,23 +270,19 @@
             font-size: 12px;
         }
 
-        
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
                 gap: 15px;
                 text-align: center;
             }
-
             .nav-links {
                 justify-content: center;
             }
-
             .container {
                 margin: 20px;
                 padding: 30px 25px;
             }
-
             .uni-badge h2 {
                 font-size: 24px;
             }
@@ -312,7 +304,7 @@
             <a href="#">About</a>
             <a href="#">Academics</a>
             <a href="#">Admission</a>
-            <a href="#" class="admin-btn">Admin Login</a>
+            <a href="./admin.html" class="admin-btn">Admin Login</a>
         </div>
     </nav>
 
@@ -325,7 +317,7 @@
             </div>
 
             <div class="input-group">
-                <label> Email Address</label>
+                <label>Email Address</label>
                 <input type="email" id="email" placeholder="Enter your university email">
             </div>
 
@@ -336,16 +328,15 @@
                     <label>One Time Password (OTP)</label>
                     <input type="text" id="otp" placeholder="Enter 6-digit OTP">
                 </div>
-                <button onclick="verifyOTP()"> Verify & Login</button>
+                <button onclick="verifyOTP()">Verify & Login</button>
             </div>
 
             <div id="message"></div>
         </div>
     </div>
 
-    
     <div class="footer">
-        <p>© 2003 Metropolitan University | All Rights Reserved | Developed by USAMA-RUMA-NILA </p>
+        <p>© 2003 Metropolitan University | All Rights Reserved | Developed by USAMA-RUMA-NILA</p>
     </div>
 
     <script>
@@ -355,18 +346,17 @@
             let msgDiv = document.getElementById("message");
 
             if (!email) {
-                msgDiv.innerHTML = "<div class='error'> Please enter your email address</div>";
+                msgDiv.innerHTML = "<div class='error'>Please enter your email address</div>";
                 return;
             }
 
-           
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailPattern.test(email)) {
-                msgDiv.innerHTML = "<div class='error'> Please enter a valid email address</div>";
+                msgDiv.innerHTML = "<div class='error'>Please enter a valid email address</div>";
                 return;
             }
 
-            btn.innerHTML = " Sending OTP...";
+            btn.innerHTML = "Sending OTP...";
             btn.disabled = true;
 
             fetch("send_otp.php", {
@@ -378,7 +368,7 @@
             })
             .then(response => response.text())
             .then(data => {
-                btn.innerHTML = " Send OTP";
+                btn.innerHTML = "Send OTP";
                 btn.disabled = false;
 
                 if (data.length === 6 && !isNaN(data)) {
@@ -389,11 +379,11 @@
                     msgDiv.innerHTML = "<div class='success'>OTP sent to your email! Please check your inbox.</div>";
                     document.getElementById("otp_section").style.display = "block";
                 } else {
-                    msgDiv.innerHTML = "<div class='error'>" + data + "</div>";
+                    msgDiv.innerHTML = "<div class='error'> " + data + "</div>";
                 }
             })
             .catch(error => {
-                btn.innerHTML = " Send OTP";
+                btn.innerHTML = "Send OTP";
                 btn.disabled = false;
                 msgDiv.innerHTML = "<div class='error'>Connection error. Please try again.</div>";
                 console.error("Error:", error);
@@ -406,12 +396,12 @@
             let msgDiv = document.getElementById("message");
 
             if (!otp) {
-                msgDiv.innerHTML = "<div class='error'> Please enter the OTP</div>";
+                msgDiv.innerHTML = "<div class='error'>Please enter the OTP</div>";
                 return;
             }
 
             if (otp.length !== 6 || isNaN(otp)) {
-                msgDiv.innerHTML = "<div class='error'> Please enter a valid 6-digit OTP</div>";
+                msgDiv.innerHTML = "<div class='error'>Please enter a valid 6-digit OTP</div>";
                 return;
             }
 
@@ -429,7 +419,7 @@
                 if (data === "success") {
                     msgDiv.innerHTML = "<div class='success'>Login successful! Redirecting to dashboard...</div>";
                     setTimeout(() => {
-                        window.location.href = "dashboard.html";
+                        window.location.href = "dashboard.html?email=" + encodeURIComponent(email);
                     }, 1000);
                 } else {
                     msgDiv.innerHTML = "<div class='error'>" + data + "</div>";
