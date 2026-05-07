@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metropolitan University - Student Login</title>
+    <title>Metropolitan University - Login Portal</title>
     <style>
         * {
             margin: 0;
@@ -27,7 +27,7 @@
             width: 100%;
             height: 100%;
             background: url('bg.jpg') center/cover no-repeat;
-            opacity: 0.2;
+            opacity: 0.15;
             z-index: -1;
         }
 
@@ -131,6 +131,39 @@
             align-items: center;
             justify-content: center;
             padding: 40px 20px;
+        }
+
+        .login-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: 0.3s;
+            margin-top: 0;
+            width: auto;
+        }
+
+        .tab-btn.active {
+            background: rgba(255,255,255,0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: none;
+            box-shadow: none;
         }
 
         .container {
@@ -270,6 +303,16 @@
             font-size: 12px;
         }
 
+        /* Student Login Form */
+        #studentLoginForm {
+            display: block;
+        }
+
+        /* Admin Login Form */
+        #adminLoginForm {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
@@ -286,6 +329,10 @@
             .uni-badge h2 {
                 font-size: 24px;
             }
+            .tab-btn {
+                padding: 8px 20px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -300,11 +347,10 @@
             </div>
         </div>
         <div class="nav-links">
-            <a href="./index.html">Home</a>
-            <a href="#">About</a>
-            <a href="#">Academics</a>
-            <a href="#">Admission</a>
-            <a href="./admin.html" class="admin-btn">Admin Login</a>
+            <a href="#">Home</a>
+            <a href="https://www.metrouni.edu.bd/sites/university/overview" target="_blank">About</a>
+            <a href="https://www.metrouni.edu.bd/sites/programmes/honours-programmes" target="_blank">Academics</a>
+            <a href="https://www.metrouni.edu.bd/sites/policies-regulations/student-code-of-conduct" target="_blank">Admission</a>
         </div>
     </nav>
 
@@ -312,23 +358,45 @@
         <div class="container">
             <div class="uni-badge">
                 <div class="icon">🎓</div>
-                <h2>Student Login</h2>
+                <h2>Login Portal</h2>
                 <p>Access your academic portal</p>
             </div>
 
-            <div class="input-group">
-                <label>Email Address</label>
-                <input type="email" id="email" placeholder="Enter your university email">
+            <div class="login-tabs">
+                <button class="tab-btn active" onclick="showStudentLogin()">🎓 Student Login</button>
+                <button class="tab-btn" onclick="showAdminLogin()">👨‍💼 Admin Login</button>
             </div>
 
-            <button onclick="sendOTP()" id="sendBtn">Send OTP</button>
-
-            <div id="otp_section">
+            <div id="studentLoginForm">
                 <div class="input-group">
-                    <label>One Time Password (OTP)</label>
-                    <input type="text" id="otp" placeholder="Enter 6-digit OTP">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your university email">
                 </div>
-                <button onclick="verifyOTP()">Verify & Login</button>
+
+                <button onclick="sendOTP()" id="sendBtn"> Send OTP</button>
+
+                <div id="otp_section">
+                    <div class="input-group">
+                        <label>🔐 One Time Password (OTP)</label>
+                        <input type="text" id="otp" placeholder="Enter 6-digit OTP">
+                    </div>
+                    <button onclick="verifyOTP()"> Verify & Login</button>
+                </div>
+            </div>
+
+            <!-- Admin Login Form -->
+            <div id="adminLoginForm">
+                <div class="input-group">
+                    <label>📧 Email Address</label>
+                    <input type="email" id="admin_email" placeholder="admin@example.com">
+                </div>
+
+                <div class="input-group">
+                    <label>🔒 Password</label>
+                    <input type="password" id="admin_pass" placeholder="Enter your password">
+                </div>
+
+                <button onclick="adminLogin()" id="adminLoginBtn"> Login to Dashboard</button>
             </div>
 
             <div id="message"></div>
@@ -336,23 +404,49 @@
     </div>
 
     <div class="footer">
-        <p>© 2003 Metropolitan University | All Rights Reserved | Developed by USAMA-RUMA-NILA</p>
+        <p>© 2003 Metropolitan University | All Rights Reserved | Developed by MU IT Department</p>
     </div>
 
     <script>
+        function checkSession() {
+            fetch("check_auth.php")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.student_logged_in || data.admin_logged_in) {
+                        window.location.href = "/dashboard.html";
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        function showStudentLogin() {
+            document.getElementById("studentLoginForm").style.display = "block";
+            document.getElementById("adminLoginForm").style.display = "none";
+            document.querySelector(".tab-btn.active").classList.remove("active");
+            event.target.classList.add("active");
+            document.getElementById("message").innerHTML = "";
+        }
+
+        function showAdminLogin() {
+            document.getElementById("studentLoginForm").style.display = "none";
+            document.getElementById("adminLoginForm").style.display = "block";
+            document.querySelector(".tab-btn.active").classList.remove("active");
+            event.target.classList.add("active");
+            document.getElementById("message").innerHTML = "";
+        }
         function sendOTP() {
             let email = document.getElementById("email").value;
             let btn = document.getElementById("sendBtn");
             let msgDiv = document.getElementById("message");
 
             if (!email) {
-                msgDiv.innerHTML = "<div class='error'>Please enter your email address</div>";
+                msgDiv.innerHTML = "<div class='error'> Please enter your email address</div>";
                 return;
             }
 
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailPattern.test(email)) {
-                msgDiv.innerHTML = "<div class='error'>Please enter a valid email address</div>";
+                msgDiv.innerHTML = "<div class='error'> Please enter a valid email address</div>";
                 return;
             }
 
@@ -368,24 +462,24 @@
             })
             .then(response => response.text())
             .then(data => {
-                btn.innerHTML = "Send OTP";
+                btn.innerHTML = " Send OTP";
                 btn.disabled = false;
 
                 if (data.length === 6 && !isNaN(data)) {
                     alert("🎓 Your OTP is: " + data + "\n\nPlease use this OTP to login.");
-                    msgDiv.innerHTML = "<div class='success'>OTP generated successfully! Check the alert box.</div>";
+                    msgDiv.innerHTML = "<div class='success'> OTP generated successfully! Check the alert box.</div>";
                     document.getElementById("otp_section").style.display = "block";
                 } else if (data === "success") {
-                    msgDiv.innerHTML = "<div class='success'>OTP sent to your email! Please check your inbox.</div>";
+                    msgDiv.innerHTML = "<div class='success'> OTP sent to your email! Please check your inbox.</div>";
                     document.getElementById("otp_section").style.display = "block";
                 } else {
                     msgDiv.innerHTML = "<div class='error'> " + data + "</div>";
                 }
             })
             .catch(error => {
-                btn.innerHTML = "Send OTP";
+                btn.innerHTML = " Send OTP";
                 btn.disabled = false;
-                msgDiv.innerHTML = "<div class='error'>Connection error. Please try again.</div>";
+                msgDiv.innerHTML = "<div class='error'> Connection error. Please try again.</div>";
                 console.error("Error:", error);
             });
         }
@@ -396,16 +490,16 @@
             let msgDiv = document.getElementById("message");
 
             if (!otp) {
-                msgDiv.innerHTML = "<div class='error'>Please enter the OTP</div>";
+                msgDiv.innerHTML = "<div class='error'> Please enter the OTP</div>";
                 return;
             }
 
             if (otp.length !== 6 || isNaN(otp)) {
-                msgDiv.innerHTML = "<div class='error'>Please enter a valid 6-digit OTP</div>";
+                msgDiv.innerHTML = "<div class='error'> Please enter a valid 6-digit OTP</div>";
                 return;
             }
 
-            msgDiv.innerHTML = "<div class='success'>Verifying OTP...</div>";
+            msgDiv.innerHTML = "<div class='success'> Verifying OTP...</div>";
 
             fetch("verify_otp.php", {
                 method: "POST",
@@ -417,12 +511,12 @@
             .then(response => response.text())
             .then(data => {
                 if (data === "success") {
-                    msgDiv.innerHTML = "<div class='success'>Login successful! Redirecting to dashboard...</div>";
+                    msgDiv.innerHTML = "<div class='success'> Login successful! Redirecting to dashboard...</div>";
                     setTimeout(() => {
-                        window.location.href = "dashboard.html?email=" + encodeURIComponent(email);
+                        window.location.href = "dashboard.html";
                     }, 1000);
                 } else {
-                    msgDiv.innerHTML = "<div class='error'>" + data + "</div>";
+                    msgDiv.innerHTML = "<div class='error'>✗ " + data + "</div>";
                 }
             })
             .catch(error => {
@@ -430,6 +524,61 @@
                 console.error("Error:", error);
             });
         }
+
+        
+        function adminLogin() {
+            let email = document.getElementById("admin_email").value;
+            let password = document.getElementById("admin_pass").value;
+            let btn = document.getElementById("adminLoginBtn");
+            let msgDiv = document.getElementById("message");
+            
+            if (!email || !password) {
+                msgDiv.innerHTML = "<div class='error'> Please enter both email and password</div>";
+                return;
+            }
+            
+            btn.innerHTML = "Authenticating...";
+            btn.disabled = true;
+            
+            fetch("admin_login.php", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: "email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password)
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data === "success") {
+                    msgDiv.innerHTML = "<div class='success'> Login successful! Redirecting...</div>";
+                    setTimeout(() => {
+                        window.location.href = "dashboard.html";
+                    }, 1000);
+                } else {
+                    msgDiv.innerHTML = "<div class='error'> Login failed: " + data + "</div>";
+                    btn.innerHTML = " Login to Dashboard";
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                msgDiv.innerHTML = "<div class='error'> Connection error. Please try again.</div>";
+                btn.innerHTML = "Login to Dashboard";
+                btn.disabled = false;
+            });
+        }
+        document.getElementById("admin_pass").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                adminLogin();
+            }
+        });
+
+        document.getElementById("otp").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                verifyOTP();
+            }
+        });
+
+        checkSession();
     </script>
 </body>
 

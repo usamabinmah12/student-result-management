@@ -11,8 +11,8 @@ $res = $stmt->get_result();
 
 if ($row = $res->fetch_assoc()) {
     if ($row['password'] === $password) {
-        $_SESSION['admin'] = $email;
         $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_email'] = $email;
         echo "success";
     } else {
         echo "Invalid";
